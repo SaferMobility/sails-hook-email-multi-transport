@@ -27,7 +27,9 @@ Parameter      | Type                | Details
 -------------- | ------------------- |:---------------------------------
 transporters   | ((array)) | An array of `transporter` objects (described below)
 templateDir | ((string)) | Path to view templates relative to `sails.config.appPath` (defaults to `views/emailTemplates`)
-
+from | ((string)) | Default `from` email address
+alwaysSendTo | ((string)) | If set, all emails will be sent to this address regardless of the `to` option specified.  Good for testing live emails without worrying about accidentally spamming people.
+testMode | ((boolean)) | Flag indicating whether the hook is in "test mode" globally for all transports.  In test mode, email options and contents are written to a `.tmp/email-TRANSPORT.txt` file instead of being actually sent.  Defaults to `true`.
 
 #### Transporter Object definition
 
@@ -38,9 +40,7 @@ isDefault      | ((boolean)) | Whether to use this transporter as the default if
 service        | ((string)) | A "well-known service" that Nodemailer knows how to communicate with (see [this list of services](https://github.com/andris9/nodemailer-wellknown/blob/v0.1.5/README.md#supported-services))
 auth | ((object)) | Authentication object as `{user:"...", pass:"..."}`
 transporter | ((object)) | Custom transporter passed directly to nodemailer.createTransport (overrides service/auth) (see [Other Transports](https://nodemailer.com/transports/))
-from | ((string)) | Default `from` email address
-testMode | ((boolean)) | Flag indicating whether the hook is in "test mode".  In test mode, email options and contents are written to a `.tmp/email.txt` file instead of being actually sent.  Defaults to `true`.
-alwaysSendTo | ((string)) | If set, all emails will be sent to this address regardless of the `to` option specified.  Good for testing live emails without worrying about accidentally spamming people.
+testMode | ((boolean)) | Flag indicating whether the hook is in "test mode".  In test mode, email options and contents are written to a `.tmp/email-TRANSPORT.txt` file instead of being actually sent.  Defaults to `true`.
 
 #### Example
 
