@@ -181,8 +181,8 @@ module.exports = function Email(sails) {
       };
 
       // If there is an override in the transporter, use it.
-      if (sails.config[self.configKey].transporters[options.transporter].from) {
-        defaultOptions.from = sails.config[self.configKey].transporters[options.transporter].from;
+      if (sails.config[self.configKey].transporters[useTransporter].from) {
+        defaultOptions.from = sails.config[self.configKey].transporters[useTransporter].from;
       }
 
       sails.log.verbose('EMAILING:', options);
