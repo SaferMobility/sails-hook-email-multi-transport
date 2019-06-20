@@ -25,7 +25,7 @@ var _ = require('lodash');
 
 module.exports = function Email(sails) {
 
-  var transport;
+  var transports = {};
   var self;
 
   var compileTemplate = function (view, data, cb) {
@@ -60,14 +60,18 @@ module.exports = function Email(sails) {
      */
     defaults: {
       __configKey__: {
-        service: 'Gmail',
-        auth: {
-          user: 'myemailaddress@gmail.com',
-          pass: 'mypassword'
-        },
-        templateDir: path.resolve(sails.config.appPath, 'views/emailTemplates'),
-        from: 'noreply@hydra.com',
-        testMode: true
+        transporters: [
+          {
+            service: 'Gmail',
+            auth: {
+              user: 'myemailaddress@gmail.com',
+              pass: 'mypassword'
+            },
+            testMode: true
+          }
+        ],
+        from: 'noreply@example.com',
+        templateDir: path.resolve(sails.config.appPath, 'views/emailTemplates')
       }
     },
 
@@ -82,57 +86,73 @@ module.exports = function Email(sails) {
      */
     initialize: function (cb) {
       self = this;
-
-      // Optimization for later on: precompile all the templates here and
-      // build up a directory of named functions.
-      //
-      if (sails.config[self.configKey].testMode) {
-        transport = {
-          sendMail: function (options, cb) {
-
-            // Add sent timestamp
-            options.sentAt = new Date();
-
-            // First check the .tmp directory exists
-            fs.exists(path.join(sails.config.appPath, '.tmp'), function (status) {
-              if (!status) {
-                fs.mkdir(path.join(sails.config.appPath, '.tmp'), function (err) {
-                  if (err) return cb(err);
-                  fs.appendFile(path.join(sails.config.appPath, '.tmp/email.txt'), JSON.stringify(options) + "\n", cb);
-                });
-                return;
-              }
-
-              // Otherwise just write to the .tmp/email.txt file
-              fs.appendFile(path.join(sails.config.appPath, '.tmp/email.txt'), JSON.stringify(options) + "\n", cb);
-            });
+      
+      // If we don't have an array of transporters, create a single default transporter
+      // using the configuration style of `sails-hook-email`.
+      if (!Array.isArray(sails.config[self.configKey].transporters) {
+        sails.config[self.configKey].transporters = [
+          {
+            name: "default",
+            isDefault: true,
+            service: sails.config[self.configKey].service,
+            auth: sails.config[self.configKey].auth,
+            transporter: sails.config[self.configKey].transporter,
+            testMode: sails.config[self.configKey].testMode
           }
-        };
-        return cb();
-      } else {
-
-        try {
-          if (sails.config[self.configKey].transporter) {
-            // If custom transporter is set, use that first
-            transport = nodemailer.createTransport(sails.config[self.configKey].transporter);
-          } else {
-            // create reusable transport method (opens pool of SMTP connections)
-            var smtpPool = require('nodemailer-smtp-pool');
-            transport = nodemailer.createTransport(smtpPool({
-              service: sails.config[self.configKey].service,
-              auth: sails.config[self.configKey].auth
-            }));
-          }
-
-          // Auto generate text
-          transport.use('compile', htmlToText());
-          return cb();
-        }
-        catch (e) {
-          return cb(e);
-        }
-
+        ];
       }
+          
+      sails.config[self.configKey].transporters.forEach((transporterConfig) => {
+
+        // Optimization for later on: precompile all the templates here and
+        // build up a directory of named functions.
+        //
+        if (transporterConfig.testMode || sails.config[self.configKey].testMode) {
+          transports[transporterConfig.name] = {
+            sendMail: function (options, cb) {
+
+              // Add sent timestamp
+              options.sentAt = new Date();
+
+              // First check the .tmp directory exists
+              fs.exists(path.join(sails.config.appPath, '.tmp'), function (status) {
+                if (!status) {
+                  fs.mkdir(path.join(sails.config.appPath, '.tmp'), function (err) {
+                    if (err) return cb(err);
+                    fs.appendFile(path.join(sails.config.appPath, '.tmp/email-' + transporterConfig.name + '.txt'), JSON.stringify(options) + "\n", cb);
+                  });
+                  return;
+                }
+
+                // Otherwise just write to the .tmp/email.txt file
+                fs.appendFile(path.join(sails.config.appPath, '.tmp/email-' + transporterConfig.name + '.txt'), JSON.stringify(options) + "\n", cb);
+              });
+            }
+          };
+        } else {
+
+          try {
+            if (transporterConfig.transporter) {
+              // If custom transporter is set, use that first
+              transports[transporterConfig.name] = nodemailer.createTransport(sails.config[self.configKey].transporter);
+            } else {
+              // create reusable transport method (opens pool of SMTP connections)
+              var smtpPool = require('nodemailer-smtp-pool');
+              transports[transporterConfig.name] = nodemailer.createTransport(smtpPool({
+                service: transporterConfig.service,
+                auth: transporterConfig.auth
+              }));
+            }
+
+            // Auto generate text
+            transport.use('compile', htmlToText());
+          }
+          catch (e) {
+            return cb(e);
+          }
+        }
+      });
+      return cb();
     },
 
     /**
