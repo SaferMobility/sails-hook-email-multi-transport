@@ -25,12 +25,19 @@ By default, configuration lives in `sails.config.email`.  The configuration key 
 
 Parameter      | Type                | Details
 -------------- | ------------------- |:---------------------------------
+transporters   | ((array)) | An array of `transporter` objects (described below)
+templateDir | ((string)) | Path to view templates relative to `sails.config.appPath` (defaults to `views/emailTemplates`)
+
+
+#### Transporter Object definition
+
+Parameter      | Type                | Details
+-------------- | ------------------- |:---------------------------------
 name           | ((string)) | The name of this transporter to reference it later
 isDefault      | ((boolean)) | Whether to use this transporter as the default if a transporter is not specified when sending the mail message. *Note that if more than one transporter has this option set to `true`, there is no guarantee of which one will be used.*
 service        | ((string)) | A "well-known service" that Nodemailer knows how to communicate with (see [this list of services](https://github.com/andris9/nodemailer-wellknown/blob/v0.1.5/README.md#supported-services))
 auth | ((object)) | Authentication object as `{user:"...", pass:"..."}`
 transporter | ((object)) | Custom transporter passed directly to nodemailer.createTransport (overrides service/auth) (see [Other Transports](https://nodemailer.com/transports/))
-templateDir | ((string)) | Path to view templates relative to `sails.config.appPath` (defaults to `views/emailTemplates`)
 from | ((string)) | Default `from` email address
 testMode | ((boolean)) | Flag indicating whether the hook is in "test mode".  In test mode, email options and contents are written to a `.tmp/email.txt` file instead of being actually sent.  Defaults to `true`.
 alwaysSendTo | ((string)) | If set, all emails will be sent to this address regardless of the `to` option specified.  Good for testing live emails without worrying about accidentally spamming people.
@@ -40,10 +47,15 @@ alwaysSendTo | ((string)) | If set, all emails will be sent to this address rega
 ```javascript
 // [your-sails-app]/config/email.js
 module.exports.email = {
-  name: 'MyGmail',
-  service: 'Gmail',
-  auth: {user: 'foobar@gmail.com', pass: 'emailpassword'},
-  testMode: true
+  transporters: [
+    {
+      name: 'MyGmail',
+      isDefault: true,
+      service: 'Gmail',
+      auth: {user: 'foobar@gmail.com', pass: 'emailpassword'},
+      testMode: true
+    }
+  ]
 };
 
 ```
