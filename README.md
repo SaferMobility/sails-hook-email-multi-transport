@@ -1,26 +1,12 @@
-# sails-hook-email
+# sails-hook-email-multi-transport
 
-> ### There are no updates planned for this hook for Sails v1.0 and beyond.
->
-> Feel free to continue to use this hook in existing projects, as-is, as long as it's doing the job for you.
-> Just note that it's no longer the approach the Sails core team uses for new apps.
-> Instead, we are now recommending the approach for sending emails that is bundled as part of `sails new` in Sails v1.
->
-> To try that out, run `sails new foo --caviar` using Sails >= v1.0 and Node <= v7.9.
->
-> _If you're unsure or need advice, visit https://sailsjs.com/support._
-
-
-
-[![Dependency Status](https://david-dm.org/balderdashy/sails-hook-email.svg)](https://david-dm.org/balderdashy/sails-hook-email)
-
-Email hook for [Sails JS](http://sailsjs.org), using [Nodemailer](https://github.com/andris9/Nodemailer/blob/v1.3.4/README.md)
+Email hook for [Sails JS](http://sailsjs.org), using [Nodemailer](https://github.com/nodemailer/nodemailer), which allows for multiple Nodemailer [transports](https://nodemailer.com/usage/) for sending different types of email though different ways.
 
 *Note: This requires Sails v0.10.6+.*
 
 ### Installation
 
-`npm install sails-hook-email`
+`npm install sails-hook-email-multi-transport`
 
 ### Usage
 
@@ -30,18 +16,20 @@ Parameter      | Type                | Details
 -------------- | ------------------- |:---------------------------------
 template       | ((string))          | Relative path from `templateDir` (see "Configuration" below) to a folder containing email templates.
 data           | ((object))          | Data to use to replace template tokens
-options        | ((object))          | Email sending options (see [Nodemailer docs](https://github.com/andris9/Nodemailer/blob/v1.3.4/README.md#e-mail-message-fields))
+options        | ((object))          | Email sending options (see [Nodemailer docs](https://nodemailer.com/))
 cb             | ((function))        | Callback to be run after the email sends (or if an error occurs).
 
 ### Configuration
 
-By default, configuration lives in `sails.config.email`.  The configuration key (`email`) can be changed by setting `sails.config.hooks['sails-hook-email'].configKey`.
+By default, configuration lives in `sails.config.email`.  The configuration key (`email`) can be changed by setting `sails.config.hooks['sails-hook-email-multi-transport'].configKey`. The configuration is a single configuration object or an array of objects that look like this:
 
 Parameter      | Type                | Details
 -------------- | ------------------- |:---------------------------------
+name           | ((string)) | The name of this transporter to reference it later
+isDefault      | ((boolean)) | Whether to use this transporter as the default if a transporter is not specified when sending the mail message. *Note that if more than one transporter has this option set to `true`, there is no guarantee of which one will be used.*
 service        | ((string)) | A "well-known service" that Nodemailer knows how to communicate with (see [this list of services](https://github.com/andris9/nodemailer-wellknown/blob/v0.1.5/README.md#supported-services))
 auth | ((object)) | Authentication object as `{user:"...", pass:"..."}`
-transporter | ((object)) | Custom transporter passed directly to nodemailer.createTransport (overrides service/auth) (see [Available Transports](https://github.com/andris9/Nodemailer/blob/v1.3.4/README.md#available-transports))
+transporter | ((object)) | Custom transporter passed directly to nodemailer.createTransport (overrides service/auth) (see [Other Transports](https://nodemailer.com/transports/))
 templateDir | ((string)) | Path to view templates relative to `sails.config.appPath` (defaults to `views/emailTemplates`)
 from | ((string)) | Default `from` email address
 testMode | ((boolean)) | Flag indicating whether the hook is in "test mode".  In test mode, email options and contents are written to a `.tmp/email.txt` file instead of being actually sent.  Defaults to `true`.
@@ -52,6 +40,7 @@ alwaysSendTo | ((string)) | If set, all emails will be sent to this address rega
 ```javascript
 // [your-sails-app]/config/email.js
 module.exports.email = {
+  name: 'MyGmail',
   service: 'Gmail',
   auth: {user: 'foobar@gmail.com', pass: 'emailpassword'},
   testMode: true
@@ -86,7 +75,8 @@ sails.hooks.email.send(
   },
   {
     to: "joe@example.com",
-    subject: "Hi there"
+    subject: "Hi there",
+    transport: "MyGmail"
   },
   function(err) {console.log(err || "It worked!");}
 )
