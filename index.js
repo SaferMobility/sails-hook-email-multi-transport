@@ -132,7 +132,7 @@ module.exports = function Email(sails) {
           try {
             if (transporterConfig.transporter) {
               // If custom transporter is set, use that first
-              transports[transporterConfig.name] = nodemailer.createTransport(sails.config[self.configKey].transporter);
+              transports[transporterConfig.name] = nodemailer.createTransport(transporterConfig.transporter);
             } else {
               // create reusable transport method (opens pool of SMTP connections)
               var smtpPool = require('nodemailer-smtp-pool');
@@ -179,7 +179,8 @@ module.exports = function Email(sails) {
       var transport = transports[useTransporter];
 
       if (!transport) {
-        throw new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config." + self.configKey + "` configuration.");
+        cb(new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config." + self.configKey + "` configuration."));
+        return;
       }
 
       // Set some default options
@@ -188,7 +189,7 @@ module.exports = function Email(sails) {
       };
 
       // If there is an override in the transporter, use it.
-      if (transport.extraopts.from) {
+      if ('string' === typeof transport.extraopts.from) {
         defaultOptions.from = transport.extraopts.from;
       }
 
@@ -212,7 +213,7 @@ module.exports = function Email(sails) {
             },
 
             // Send the email
-            sendEmail: ['compileHtmlTemplate', 'compileTextTemplate', function (next, results) {
+            sendEmail: ['compileHtmlTemplate', 'compileTextTemplate', function (results, next) {
 
               defaultOptions.html = results.compileHtmlTemplate;
               if (results.compileTextTemplate) defaultOptions.text = results.compileTextTemplate;
