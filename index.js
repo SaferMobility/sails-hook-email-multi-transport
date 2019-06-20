@@ -66,6 +66,7 @@ module.exports = function Email(sails) {
           pass: 'mypassword'
         },
         defaultTransporter: 'default',
+        useDefaultTransportIfMissing: true,
         from: 'noreply@example.com',
         templateDir: path.resolve(sails.config.appPath, 'views/emailTemplates'),
         testMode: true
@@ -178,8 +179,13 @@ module.exports = function Email(sails) {
 
       var transport = transports[useTransporter];
 
+      if (!transport && sails.config[self.configKey].useDefaultTransportIfMissing) {
+        sails.log.warn(`Trying to use email transport "${useTransporter}", but it is not defined. Falling back to "default".`);
+        transport = transports[useTransporter].defaultTransporter;
+      }
+
       if (!transport) {
-        cb(new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config." + self.configKey + "` configuration."));
+        cb(new Error(`Email Transporter "${useTransporter}" not found. Check your "sails.config[${self.configKey}]" configuration.`));
         return;
       }
 

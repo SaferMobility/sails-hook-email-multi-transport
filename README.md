@@ -31,6 +31,7 @@ from | ((string)) | Default `from` email address
 alwaysSendTo | ((string)) | If set, all emails will be sent to this address regardless of the `to` option specified.  Good for testing live emails without worrying about accidentally spamming people.
 testMode | ((boolean)) | Flag indicating whether the hook is in "test mode" globally for all transports.  In test mode, email options and contents are written to a `.tmp/email-TRANSPORT.txt` file instead of being actually sent.  Defaults to `true`.
 defaultTransporter | ((string)) | The name of the transporter to use if none is specified.
+useDefaultTransportIfMissing | ((boolean)) | Whether to fall back to the default transport if the specified name does not exist. *Note that this generates a warning on the console.*
 
 Additionally, if the `transporters` configuration option does not exist, a new "default" transporter is created by reading the transporter options listed below directly from the config object. This allows backwards compatibility with `sails-hook-email`.
 
