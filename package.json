@@ -1,7 +1,7 @@
 {
-  "name": "sails-hook-email",
+  "name": "sails-hook-email-multi-transport",
   "version": "0.12.1",
-  "description": "Email hook for Sails",
+  "description": "Email hook for Sails that allows for multiple NodeMailer transports to be used",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,6 +21,9 @@
     },
     {
       "name": "Dan Prietti"
+    },
+    {
+      "name": "Moshe Katz"
     }
   ],
   "license": "MIT",
@@ -29,14 +32,13 @@
   },
   "dependencies": {
     "ejs": "^2.3.1",
-    "nodemailer": "^1.3.4",
-    "nodemailer-html-to-text": "^1.0.1",
-    "nodemailer-smtp-pool": "^1.1.1",
-    "async": "0.9.0",
-    "lodash": "3.2.0"
+    "nodemailer": "^6.2.1",
+    "nodemailer-html-to-text": "^3.0.0",
+    "async": "^2.6.2",
+    "lodash": "^4.17.11"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/balderdashy/sails-hook-email.git"
+    "url": "git://github.com/SaferMobility/sails-hook-email-multi-transport.git"
   }
 }
