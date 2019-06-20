@@ -60,18 +60,15 @@ module.exports = function Email(sails) {
      */
     defaults: {
       __configKey__: {
-        transporters: [
-          {
-            service: 'Gmail',
-            auth: {
-              user: 'myemailaddress@gmail.com',
-              pass: 'mypassword'
-            },
-            testMode: true
-          }
-        ],
+        service: 'Gmail',
+        auth: {
+          user: 'myemailaddress@gmail.com',
+          pass: 'mypassword'
+        },
+        defaultTransporter: 'default',
         from: 'noreply@example.com',
-        templateDir: path.resolve(sails.config.appPath, 'views/emailTemplates')
+        templateDir: path.resolve(sails.config.appPath, 'views/emailTemplates'),
+        testMode: true
       }
     },
 
@@ -86,14 +83,13 @@ module.exports = function Email(sails) {
      */
     initialize: function (cb) {
       self = this;
-      
+
       // If we don't have an array of transporters, create a single default transporter
       // using the configuration style of `sails-hook-email`.
       if (!Array.isArray(sails.config[self.configKey].transporters) {
         sails.config[self.configKey].transporters = [
           {
             name: "default",
-            isDefault: true,
             service: sails.config[self.configKey].service,
             auth: sails.config[self.configKey].auth,
             transporter: sails.config[self.configKey].transporter,
@@ -101,13 +97,16 @@ module.exports = function Email(sails) {
           }
         ];
       }
-          
+
       sails.config[self.configKey].transporters.forEach((transporterConfig) => {
 
         // Optimization for later on: precompile all the templates here and
         // build up a directory of named functions.
         //
-        if (transporterConfig.testMode || sails.config[self.configKey].testMode) {
+
+        // Checking for `testMode === undefined` allows us to enable "global" `testMode`
+        // while disabling it explicitly for a single transporter.
+        if (transporterConfig.testMode || (transporterConfig.testMode === undefined && sails.config[self.configKey].testMode)) {
           transports[transporterConfig.name] = {
             sendMail: function (options, cb) {
 
@@ -145,7 +144,7 @@ module.exports = function Email(sails) {
             }
 
             // Auto generate text
-            transport.use('compile', htmlToText());
+            transports[transporterConfig.name].use('compile', htmlToText());
           }
           catch (e) {
             return cb(e);
@@ -210,6 +209,14 @@ module.exports = function Email(sails) {
               // }
               var mailOptions = _.defaults(options, defaultOptions);
               mailOptions.to = sails.config[self.configKey].alwaysSendTo || mailOptions.to;
+
+              var useTransporter = options.transporter || sails.config[self.configKey].defaultTransporter;
+
+              var transport = transports[useTransporter];
+
+              if (!transport) {
+                throw new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config.email` configuration.");
+              }
 
               transport.sendMail(mailOptions, next);
             }]
