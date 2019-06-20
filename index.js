@@ -77,10 +77,6 @@ module.exports = function Email(sails) {
       sails.config[this.configKey].templateDir = path.resolve(sails.config.appPath, sails.config[this.configKey].templateDir);
     },
 
-
-    /**
-     * @param  {Function} cb startup callback
-     */
     initialize: function (cb) {
       self = this;
 
@@ -171,10 +167,23 @@ module.exports = function Email(sails) {
       var templateDir = sails.config[self.configKey].templateDir;
       var templatePath = path.join(templateDir, template);
 
+      var useTransporter = options.transporter || sails.config[self.configKey].defaultTransporter;
+
+      var transport = transports[useTransporter];
+
+      if (!transport) {
+        throw new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config." + self.configKey + "` configuration.");
+      }
+
       // Set some default options
       var defaultOptions = {
         from: sails.config[self.configKey].from
       };
+
+      // If there is an override in the transporter, use it.
+      if (sails.config[self.configKey].transporters[options.transporter].from) {
+        defaultOptions.from = sails.config[self.configKey].transporters[options.transporter].from;
+      }
 
       sails.log.verbose('EMAILING:', options);
 
@@ -209,14 +218,6 @@ module.exports = function Email(sails) {
               // }
               var mailOptions = _.defaults(options, defaultOptions);
               mailOptions.to = sails.config[self.configKey].alwaysSendTo || mailOptions.to;
-
-              var useTransporter = options.transporter || sails.config[self.configKey].defaultTransporter;
-
-              var transport = transports[useTransporter];
-
-              if (!transport) {
-                throw new Error("Email Transporter " + useTransporter + " not found. Check your `sails.config.email` configuration.");
-              }
 
               transport.sendMail(mailOptions, next);
             }]
