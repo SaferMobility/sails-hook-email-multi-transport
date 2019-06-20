@@ -205,6 +205,9 @@ module.exports = function Email(sails) {
 
             // Grab the HTML version of the email template
             compileHtmlTemplate: function (next) {
+              if (options.textOnly) {
+                return next();
+              }
               compileTemplate(templatePath + "/html", data, next);
             },
 
@@ -213,7 +216,7 @@ module.exports = function Email(sails) {
               compileTemplate(templatePath + "/text", data, function (err, html) {
                 // Don't exit out if there is an error, we can generate plaintext
                 // from the HTML version of the template.
-                if (err) return next();
+                if (err && !options.textOnly) return next();
                 next(null, html);
               });
             },
