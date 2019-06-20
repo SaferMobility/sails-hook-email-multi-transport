@@ -122,6 +122,9 @@ module.exports = function Email(sails) {
                 // Otherwise just write to the .tmp/email.txt file
                 fs.appendFile(path.join(sails.config.appPath, '.tmp/email-' + transporterConfig.name + '.txt'), JSON.stringify(options) + "\n", cb);
               });
+            },
+            extraopts: {
+              from: transporterConfig.from
             }
           };
         } else {
@@ -141,6 +144,10 @@ module.exports = function Email(sails) {
 
             // Auto generate text
             transports[transporterConfig.name].use('compile', htmlToText());
+
+            transports[transporterConfig.name].extraopts = {
+              from: transporterConfig.from
+            }
           }
           catch (e) {
             return cb(e);
@@ -181,8 +188,8 @@ module.exports = function Email(sails) {
       };
 
       // If there is an override in the transporter, use it.
-      if (sails.config[self.configKey].transporters[useTransporter].from) {
-        defaultOptions.from = sails.config[self.configKey].transporters[useTransporter].from;
+      if (transport.extraopts.from) {
+        defaultOptions.from = transport.extraopts.from;
       }
 
       sails.log.verbose('EMAILING:', options);
