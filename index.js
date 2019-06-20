@@ -79,14 +79,14 @@ module.exports = function Email(sails) {
 
 
     /**
-     * @param  {Function} cb
+     * @param  {Function} cb startup callback
      */
     initialize: function (cb) {
       self = this;
 
       // If we don't have an array of transporters, create a single default transporter
       // using the configuration style of `sails-hook-email`.
-      if (!Array.isArray(sails.config[self.configKey].transporters) {
+      if (!Array.isArray(sails.config[self.configKey].transporters)) {
         sails.config[self.configKey].transporters = [
           {
             name: "default",

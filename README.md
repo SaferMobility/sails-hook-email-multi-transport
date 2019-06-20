@@ -4,11 +4,11 @@ Email hook for [Sails JS](http://sailsjs.org), using [Nodemailer](https://github
 
 *Note: This requires Sails v0.10.6+.*
 
-### Installation
+## Installation
 
 `npm install sails-hook-email-multi-transport`
 
-### Usage
+## Usage
 
 `sails.hooks.email.send(template, data, options, cb)`
 
@@ -19,7 +19,7 @@ data           | ((object))          | Data to use to replace template tokens
 options        | ((object))          | Email sending options (see [Nodemailer docs](https://nodemailer.com/))
 cb             | ((function))        | Callback to be run after the email sends (or if an error occurs).
 
-### Configuration
+## Configuration
 
 By default, configuration lives in `sails.config.email`.  The configuration key (`email`) can be changed by setting `sails.config.hooks['sails-hook-email-multi-transport'].configKey`. The configuration is a single configuration object or an array of objects that look like this:
 
@@ -34,7 +34,7 @@ defaultTransporter | ((string)) | The name of the transporter to use if none is 
 
 Additionally, if the `transporters` configuration option does not exist, a new "default" transporter is created by reading the transporter options listed below directly from the config object. This allows backwards compatibility with `sails-hook-email`.
 
-#### Transporter Object definition
+### Transporter Object definition
 
 Parameter      | Type                | Details
 -------------- | ------------------- |:---------------------------------
@@ -44,7 +44,7 @@ auth | ((object)) | Authentication object as `{user:"...", pass:"..."}`
 transporter | ((object)) | Custom transporter passed directly to nodemailer.createTransport (overrides service/auth) (see [Other Transports](https://nodemailer.com/transports/))
 testMode | ((boolean)) | Flag indicating whether the hook is in "test mode".  In test mode, email options and contents are written to a `.tmp/email-TRANSPORT.txt` file instead of being actually sent.  Defaults to `undefined` which inhertis from the global `testMode` setting described above.
 
-#### Example
+### Example Configuration
 
 ```javascript
 // [your-sails-app]/config/email.js
@@ -62,16 +62,15 @@ module.exports.email = {
 
 ```
 
-
-### Templates
+## Templates
 
 Templates are generated using your configured Sails [View Engine](http://sailsjs.org/#!/documentation/concepts/Views/ViewEngines.html), allowing for multiple template engines and layouts.  If Sails Views are disabled, will fallback to EJS templates. To define a new email template, create a new folder with the template name inside your `templateDir` directory, and add an **html.ejs** file inside the folder (substituting .ejs for your template engine).  You may also add an optional `text.ejs` file; if none is provided, Nodemailer will attempt to create a text version of the email based on the html version.
 
-### Example
+### Example of templates
 
 Given the following **html.ejs** file contained in the folder **views/emailTemplates/testEmail**:
 
-```
+```ejs
 <p>Dear <%=recipientName%>,</p>
 <br/>
 <p><em>Thank you</em> for being a friend.</p>
@@ -80,7 +79,7 @@ Given the following **html.ejs** file contained in the folder **views/emailTempl
 
 executing the following command (after [configuring for your email service](https://github.com/balderdashy/sails-hook-email/#configuration) and turning off test mode) :
 
-```
+```javascript
 sails.hooks.email.send(
   "testEmail",
   {
