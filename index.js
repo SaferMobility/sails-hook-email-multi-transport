@@ -181,7 +181,7 @@ module.exports = function Email(sails) {
 
       if (!transport && sails.config[self.configKey].useDefaultTransportIfMissing) {
         sails.log.warn(`Trying to use email transport "${useTransporter}", but it is not defined. Falling back to "default".`);
-        transport = transports[useTransporter].defaultTransporter;
+        transport = transports[defaultTransporter];
       }
 
       if (!transport) {
