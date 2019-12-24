@@ -1,6 +1,6 @@
 {
   "name": "sails-hook-email-multi-transport",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Email hook for Sails that allows for multiple NodeMailer transports to be used",
   "main": "index.js",
   "scripts": {
@@ -31,9 +31,9 @@
     "isHook": true
   },
   "dependencies": {
-    "ejs": "^2.3.1",
-    "nodemailer": "^6.2.1",
-    "nodemailer-html-to-text": "^3.0.0",
+    "ejs": "^3.0.1",
+    "nodemailer": "^6.4.2",
+    "nodemailer-html-to-text": "^3.1.0",
     "async": "^2.6.2",
     "lodash": "^4.17.11"
   },
