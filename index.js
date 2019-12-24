@@ -214,10 +214,11 @@ module.exports = function Email(sails) {
             // Grab the Text version of the email template
             compileTextTemplate: function (next) {
               compileTemplate(templatePath + "/text", data, function (err, html) {
-                // Don't exit out if there is an error, we can generate plaintext
-                // from the HTML version of the template.
+                // If there is an error and we are not in `textOnly` mode,
+                // we can generate plaintext from the HTML version of the template.
                 if (err && !options.textOnly) return next();
-                next(null, html);
+
+                next(err, html);
               });
             },
 
